@@ -1,0 +1,39 @@
+FROM python:3.9.0-slim-buster AS base_image
+
+RUN apt-get update \
+    && apt-get -y install netcat gcc postgresql \
+    && apt-get clean
+
+RUN mkdir -p /app
+WORKDIR /app
+COPY Pipfile* ./
+
+RUN pip install pipenv
+RUN pipenv install -d --system --deploy
+
+
+FROM base_image
+
+ARG flask_app_arg=''
+ARG flask_env_arg='development'
+ARG app_settings_arg=''
+ARG database_url_arg=''
+ARG database_test_url_arg=''
+
+ENV FLASK_APP $flask_app_arg
+ENV FLASK_ENV $flask_env_arg
+ENV APP_SETTINGS $app_settings_arg
+ENV DATABASE_URL $database_url_arg
+ENV DATABASE_TEST_URL $database_test_url_arg
+# prevent python from writing pyc files to disc
+ENV PYTHONDONTWRITEBYTECODE 1
+# prevent python from buffering stdout and stderr
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /app
+COPY src/ ./src/
+COPY ./entrypoint.sh ./
+
+ENV PYTHONPATH=.
+RUN chmod +x /app/entrypoint.sh
+#CMD python src/manage.py run -h 0.0.0.0

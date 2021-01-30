@@ -1,0 +1,9 @@
+FROM postgres:13-alpine
+
+ARG postgres_user_arg=''
+ARG postgres_password_arg=''
+
+ENV POSTGRES_USER $postgres_user_arg
+ENV POSTGRES_PASSWORD $postgres_password_arg
+
+ADD create.sql /docker-entrypoint-initdb.d

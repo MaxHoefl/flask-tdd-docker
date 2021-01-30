@@ -1,0 +1,22 @@
+FROM python:3.9.0-slim-buster AS base_image
+RUN pwd
+RUN mkdir -p /app
+WORKDIR /app
+COPY Pipfile* ./
+
+RUN pip install pipenv
+RUN pipenv install --system --deploy
+
+
+FROM base_image
+
+WORKDIR /app
+
+# prevent python from writing pyc files to disc
+ENV PYTHONDONTWRITEBYTECODE 1
+# prevent python from buffering stdout and stderr
+ENV PYTHONUNBUFFERED 1
+
+COPY src/ .
+
+CMD python manage.py run -h 0.0.0.0

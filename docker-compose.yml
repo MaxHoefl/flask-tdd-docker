@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      args:
+        flask_app_arg: src/__init__.py
+        flask_env_arg: development
+        app_settings_arg: src.config.DevelopmentConfig
+        database_url_arg: postgresql://postgres:postgres@api-db:5432/api_dev
+        database_test_url_arg: postgresql://postgres:postgres@api-db:5432/api_test
+      dockerfile: docker/Dockerfile-app.dev
+    entrypoint: ['/app/entrypoint.sh']
+    volumes:
+      - .:/app
+    ports:
+      - 5004:5000
+    depends_on:
+      - api-db
+
+  api-db:
+    build:
+      context: ./src/db
+      args:
+        postgres_user_arg: postgres
+        postgres_password_arg: postgres
+      dockerfile: ../../docker/Dockerfile-db.dev
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+
